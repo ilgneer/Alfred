@@ -48,9 +48,16 @@ WizardResizable=no
 WizardImageFile={#Root}\assets\installer\wizard_100.bmp,{#Root}\assets\installer\wizard_125.bmp,{#Root}\assets\installer\wizard_150.bmp,{#Root}\assets\installer\wizard_175.bmp,{#Root}\assets\installer\wizard_200.bmp,{#Root}\assets\installer\wizard_250.bmp
 WizardSmallImageFile={#Root}\assets\installer\small_100.bmp,{#Root}\assets\installer\small_125.bmp,{#Root}\assets\installer\small_150.bmp,{#Root}\assets\installer\small_175.bmp,{#Root}\assets\installer\small_200.bmp,{#Root}\assets\installer\small_250.bmp
 LicenseFile=LICENCA_INSTALADOR.txt
-Compression=lzma2/ultra64
+; O compilador do Inno Setup é 32 bits: "ultra64" com várias threads estoura a memória
+; ("Out of memory"). A compressão roda num processo separado (64 bits quando disponível).
+#ifdef FastCompression
+Compression=lzma2/fast
+#else
+Compression=lzma2/max
+#endif
 SolidCompression=yes
-LZMANumBlockThreads=4
+LZMAUseSeparateProcess=yes
+LZMANumBlockThreads=1
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763

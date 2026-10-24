@@ -78,8 +78,13 @@ jobs:
             choco install innosetup -y --no-progress --limit-output
             $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
           }
-          & $iscc /Qp "/DAppVersion=${{ steps.ver.outputs.version }}" "/DEdition=${{ matrix.edition }}" packaging\installer\Alfred.iss
-          if ($LASTEXITCODE -ne 0) { throw "ISCC falhou" }
+          $isccArgs = @("/DAppVersion=${{ steps.ver.outputs.version }}", "/DEdition=${{ matrix.edition }}", "packaging\installer\Alfred.iss")
+          & $iscc @isccArgs
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "ISCC falhou com compressão máxima; tentando novamente com compressão rápida."
+            & $iscc "/DFastCompression=1" @isccArgs
+            if ($LASTEXITCODE -ne 0) { throw "ISCC falhou" }
+          }
           Get-ChildItem release
 
       - name: Testar instalação, execução e desinstalação

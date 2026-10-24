@@ -55,7 +55,11 @@ if (-not $SkipInstaller) {
   if (-not $iscc) { throw 'Inno Setup 6 não encontrado: https://jrsoftware.org/isdl.php' }
   $version = & $py -c "import sys; sys.path.insert(0,'src'); import alfred; print(alfred.__version__)"
   & $iscc "/DAppVersion=$version" "/DEdition=$Edition" packaging\installer\Alfred.iss
-  if ($LASTEXITCODE) { throw 'ISCC falhou' }
+  if ($LASTEXITCODE) {
+    Write-Warning 'ISCC falhou com compressão máxima; tentando com compressão rápida.'
+    & $iscc "/DFastCompression=1" "/DAppVersion=$version" "/DEdition=$Edition" packaging\installer\Alfred.iss
+    if ($LASTEXITCODE) { throw 'ISCC falhou' }
+  }
   Get-ChildItem release\*.exe | Format-Table Name, Length
 }
 Write-Host "`nPronto." -ForegroundColor Green
