@@ -1,0 +1,37 @@
+﻿ALFRED — Conversor universal de arquivos para Windows
+"Algumas tarefas é melhor deixar para o Alfred."
+Desenvolvedor: @ilgn3r — https://www.youtube.com/@ilgn3r
+
+RESUMO DAS LICENÇAS (o texto completo é instalado na pasta "licenses")
+
+1. Código-fonte do Alfred
+   GNU Affero General Public License, versão 3 ou posterior (AGPL-3.0-or-later).
+   Você pode usar este programa para qualquer finalidade, estudá-lo, modificá-lo e
+   redistribuí-lo — gratuitamente ou mediante pagamento — desde que o código-fonte
+   correspondente continue disponível sob a mesma licença.
+   O programa é fornecido "NO ESTADO EM QUE SE ENCONTRA", SEM QUALQUER GARANTIA.
+
+2. Logotipo, ilustração do personagem e nome "Alfred" neste projeto
+   Não fazem parte da licença AGPL. Todos os direitos reservados a @ilgn3r.
+   Projetos derivados devem usar identidade visual própria.
+   Projeto independente, sem afiliação com DC Comics ou Warner Bros.
+
+3. Componentes de terceiros incluídos neste instalador
+   - FFmpeg ............ GPL-3.0-or-later
+   - Pandoc ............ GPL-2.0-or-later
+   - 7-Zip ............. LGPL-2.1 + BSD-3 + restrição unRAR
+   - LibreOffice ....... MPL-2.0 (apenas na edição Completa)
+   - Qt / PySide6 ...... LGPL-3.0
+   - PyMuPDF / MuPDF ... AGPL-3.0
+   - Python, Pillow, pillow-heif (libheif LGPL, x265 GPL), pdf2docx, OpenCV,
+     python-docx, python-pptx, openpyxl, xlrd, NumPy ... licenças permissivas/copyleft
+     listadas em licenses\python\INDEX.md
+   - Fontes Inter e Lora ... SIL Open Font License 1.1
+   O código-fonte desses componentes pode ser obtido pelos endereços indicados nos
+   arquivos SOURCE.txt de cada motor e no pacote "third-party-sources" publicado em
+   cada Release do Alfred no GitHub.
+
+4. Privacidade
+   O Alfred converte tudo localmente. Nenhum arquivo é enviado para a internet.
+
+Ao continuar, você declara que leu e concorda com estes termos.

@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "alfred-converter"
+dynamic = ["version"]
+description = "ALFRED — conversor universal de arquivos para Windows. Algumas tarefas é melhor deixar para o Alfred."
+readme = "README.md"
+license = "AGPL-3.0-or-later"
+authors = [{ name = "@ilgn3r" }]
+requires-python = ">=3.11"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: Microsoft :: Windows :: Windows 10",
+  "Operating System :: Microsoft :: Windows :: Windows 11",
+  "Environment :: Win32 (MS Windows)",
+  "Natural Language :: Portuguese (Brazilian)",
+]
+
+[project.urls]
+YouTube = "https://www.youtube.com/@ilgn3r"
+
+[project.gui-scripts]
+alfred = "alfred.main:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "alfred.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-ra"
+filterwarnings = [
+  "ignore:Function.*is marked as deprecated:DeprecationWarning",
+  "ignore:The `fitz` API is deprecated",
+]
+markers = [
+  "windows: testes que só fazem sentido no Windows real",
+  "slow: testes demorados",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests", "tools"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "BLE", "SIM"]
+ignore = ["E501", "SIM105", "SIM108", "B008", "SIM102", "SIM117"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["BLE001", "B011"]

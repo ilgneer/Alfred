@@ -1,0 +1,167 @@
+name: Release (instaladores Windows)
+
+# Gera os instaladores .exe das edições Leve e Completa em um runner Windows,
+# testa tudo (conversões com os motores empacotados, executável, instalador e
+# desinstalador) e publica os artefatos. Em tags v*, cria um rascunho de Release.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.edition }}
+    runs-on: windows-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        edition: [lite, full]
+    env:
+      ALFRED_ENGINES_DIR: ${{ github.workspace }}\vendor\engines
+      PYTHONUTF8: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: x64
+          cache: pip
+
+      - name: Instalar dependências de build
+        run: pip install -r requirements-build.txt -r requirements-dev.txt
+
+      - name: Versão
+        id: ver
+        shell: pwsh
+        run: |
+          $v = python -c "import sys; sys.path.insert(0,'src'); import alfred; print(alfred.__version__)"
+          if ($env:GITHUB_REF_TYPE -eq 'tag') {
+            $tag = $env:GITHUB_REF_NAME.TrimStart('v')
+            if ($tag -notlike "$v*") { throw "Tag $env:GITHUB_REF_NAME não corresponde a __version__ $v" }
+          }
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - name: Preparar motores (FFmpeg, Pandoc, 7-Zip${{ matrix.edition == 'full' && ', LibreOffice' || '' }})
+        run: python tools/fetch_engines.py --edition ${{ matrix.edition }} --out vendor/engines
+
+      - name: Testes com os motores que serão empacotados
+        env:
+          ALFRED_TEST_REGISTRY: "1"
+          ALFRED_DISABLE_SYSTEM_LIBREOFFICE: "1"
+        run: python -m pytest -q -ra
+
+      - name: Build (PyInstaller, sem console)
+        run: python tools/build.py --edition ${{ matrix.edition }} --engines vendor/engines --repo-url "${{ github.server_url }}/${{ github.repository }}"
+
+      - name: Autoteste do executável empacotado
+        shell: pwsh
+        env:
+          ALFRED_ENGINES_DIR: ""
+        run: |
+          $report = "$env:RUNNER_TEMP\selftest-dist.json"
+          $p = Start-Process -FilePath dist\Alfred\Alfred.exe -ArgumentList @('--self-test', "`"$report`"") -Wait -PassThru
+          Get-Content $report -Raw
+          if ($p.ExitCode -ne 0) { throw "Autoteste falhou ($($p.ExitCode))" }
+
+      - name: Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = (Get-Command ISCC.exe -ErrorAction SilentlyContinue).Source
+          if (-not $iscc) {
+            foreach ($c in "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe", "$env:ProgramFiles\Inno Setup 6\ISCC.exe") { if (Test-Path $c) { $iscc = $c } }
+          }
+          if (-not $iscc) {
+            choco install innosetup -y --no-progress --limit-output
+            $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          }
+          & $iscc /Qp "/DAppVersion=${{ steps.ver.outputs.version }}" "/DEdition=${{ matrix.edition }}" packaging\installer\Alfred.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC falhou" }
+          Get-ChildItem release
+
+      - name: Testar instalação, execução e desinstalação
+        shell: pwsh
+        env:
+          ALFRED_ENGINES_DIR: ""
+        run: |
+          $setup = Get-ChildItem release\Alfred_Setup_*.exe | Select-Object -First 1
+          pwsh -File tools\test_installer.ps1 -Installer $setup.FullName -Edition ${{ matrix.edition }}
+
+      - name: Checksums e versões dos motores
+        shell: pwsh
+        run: |
+          Get-ChildItem release\*.exe | ForEach-Object {
+            $h = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$h  $($_.Name)" | Out-File -Encoding ascii -Append release\SHA256SUMS-${{ matrix.edition }}.txt
+          }
+          Get-ChildItem vendor\engines\*\SOURCE.txt | ForEach-Object { "== $($_.Directory.Name)"; Get-Content $_ } |
+            Out-File -Encoding utf8 release\ENGINES-${{ matrix.edition }}.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Alfred-Setup-${{ matrix.edition }}
+          path: |
+            release/*.exe
+            release/*.txt
+          if-no-files-found: error
+          compression-level: 0
+
+  sources:
+    name: Código-fonte dos componentes GPL
+    runs-on: ubuntu-24.04
+    needs: build
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: Alfred-Setup-full
+          path: release
+      - name: Baixar fontes correspondentes (FFmpeg, Pandoc, 7-Zip)
+        run: |
+          mkdir -p third-party-sources
+          FF=$(grep -m1 -oP 'ffmpeg version \K[0-9][0-9.]*' release/ENGINES-full.txt || true)
+          PD=$(grep -m1 -oP '^pandoc(\.exe)? \K[0-9][0-9.]*' release/ENGINES-full.txt || true)
+          echo "FFmpeg=$FF Pandoc=$PD"
+          [ -n "$FF" ] && curl -fsSL -o third-party-sources/ffmpeg-$FF.tar.xz https://ffmpeg.org/releases/ffmpeg-$FF.tar.xz
+          [ -n "$PD" ] && curl -fsSL -o third-party-sources/pandoc-$PD.tar.gz https://github.com/jgm/pandoc/archive/refs/tags/$PD.tar.gz
+          curl -fsSL -o third-party-sources/7z-src.7z https://www.7-zip.org/a/7z2409-src.7z || echo "7-Zip: ver https://www.7-zip.org/download.html"
+          cp release/ENGINES-full.txt third-party-sources/
+          cat > third-party-sources/LEIA-ME.txt <<'EOF'
+          Código-fonte dos componentes de terceiros sob GPL incluídos nos instaladores do Alfred.
+          LibreOffice (MPL-2.0): https://download.documentfoundation.org/libreoffice/src/
+          Código do próprio Alfred: este repositório (AGPL-3.0-or-later).
+          EOF
+          ls -la third-party-sources
+      - uses: actions/upload-artifact@v4
+        with:
+          name: third-party-sources
+          path: third-party-sources/
+
+  publish:
+    name: Rascunho da Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, sources]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Organizar arquivos
+        run: |
+          mkdir -p out
+          cp artifacts/Alfred-Setup-*/*.exe out/
+          cat artifacts/Alfred-Setup-*/SHA256SUMS-*.txt > out/SHA256SUMS.txt
+          (cd artifacts/third-party-sources && zip -qr ../../out/third-party-sources.zip .)
+          ls -la out
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: out/*

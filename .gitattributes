@@ -1,0 +1,12 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+*.iss text eol=crlf
+packaging/installer/*.txt text eol=crlf
+*.png binary
+*.ico binary
+*.bmp binary
+*.wav binary
+*.otf binary
+*.ttf binary
+*.rar binary
