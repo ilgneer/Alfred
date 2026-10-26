@@ -41,6 +41,9 @@ class Settings:
     # Interface
     reduce_motion: bool = False
     tray_hint_shown: bool = False
+    # Apoie o projeto
+    support_popup: bool = True
+    support_last_shown: float = 0.0
     first_run_done: bool = False
     # Interno
     schema: int = 2

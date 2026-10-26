@@ -44,6 +44,9 @@ class AboutPage(Page):
         dcol.addWidget(Label("Criado e mantido por @ilgn3r. Acompanhe novidades e tutoriais no canal.", 9.5,
                              color=T.MUTED, wrap=True))
         drow.addLayout(dcol, 1)
+        pix = GhostButton("Apoiar via Pix", "heart")
+        pix.clicked.connect(lambda: app.show_support())
+        drow.addWidget(pix)
         yt = PrimaryButton("Canal no YouTube", "play")
         yt.clicked.connect(lambda: QDesktopServices.openUrl(QUrl(YOUTUBE_URL)))
         drow.addWidget(yt)

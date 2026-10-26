@@ -5,7 +5,7 @@
 
 __all__ = ["__version__", "APP_NAME", "APP_ID", "DEVELOPER", "YOUTUBE_URL", "SLOGAN"]
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 APP_NAME = "Alfred"
 APP_ID = "ilgn3r.Alfred"

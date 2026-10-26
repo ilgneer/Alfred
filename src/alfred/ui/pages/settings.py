@@ -161,6 +161,20 @@ class SettingsPage(Page):
         self.eng_card.lay.addLayout(eb)
         self.body.addWidget(self.eng_card)
 
+        # Apoie o projeto ------------------------------------------------------
+        self.body.addWidget(section_title("Apoie o projeto"))
+        sup = GlassCard(accent=True)
+        b_pix = GhostButton("Apoiar via Pix", "heart", compact=True)
+        b_pix.clicked.connect(lambda: app.show_support())
+        sup.lay.addWidget(SettingRow("Pague um cafezinho para o mordomo",
+                                     "O Alfred é gratuito e sem anúncios. Se ele te ajuda no dia a dia, um Pix de "
+                                     "qualquer valor mantém o projeto vivo.", b_pix, "heart"))
+        self.t_support = ToggleSwitch(s.support_popup)
+        self.t_support.toggled.connect(lambda v: app.update_setting(support_popup=v))
+        sup.lay.addWidget(SettingRow("Lembrete ao abrir", "No máximo uma vez por semana, só quando a janela abrir.",
+                                     self.t_support, "bell"))
+        self.body.addWidget(sup)
+
         # Avançado -------------------------------------------------------------
         self.body.addWidget(section_title("Avançado"))
         adv = GlassCard()
@@ -242,7 +256,7 @@ class SettingsPage(Page):
         for toggle, value in ((self.t_gesture, s.explorer_gesture), (self.t_menu, s.context_menu),
                               (self.t_start, s.start_with_windows), (self.t_open, s.open_folder_when_done),
                               (self.t_notify, s.notify_when_done), (self.t_sound, s.sounds_enabled),
-                              (self.t_motion, s.reduce_motion)):
+                              (self.t_motion, s.reduce_motion), (self.t_support, s.support_popup)):
             toggle.setCheckedSilently(value)
         for c, v in ((self.c_mod, s.gesture_modifier), (self.c_out, s.output_mode), (self.c_video, s.video_quality),
                      (self.c_dpi, s.pdf_dpi)):

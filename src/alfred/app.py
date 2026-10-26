@@ -111,6 +111,7 @@ class AlfredApp(QObject):
             self.settings.update(first_run_done=True)
         if not background or not self.has_tray:
             self.window.show()
+            QTimer.singleShot(1800, self.maybe_show_support_popup)
 
     # -- engines ---------------------------------------------------------------------------
     def _detect_engines(self, refresh: bool = False):
@@ -168,6 +169,27 @@ class AlfredApp(QObject):
         self.window.bring_to_front()
         if key:
             self.window.show_page(key)
+
+    def show_support(self, from_popup: bool = False):
+        from alfred.ui.support_dialog import SupportDialog
+
+        if from_popup is False:
+            self.window.bring_to_front()
+        dlg = SupportDialog(self, self.window, from_popup=from_popup)
+        self._support_dialog = dlg
+        dlg.open()
+        return dlg
+
+    def maybe_show_support_popup(self):
+        """Popup de apoio: só com a janela aberta, no máximo uma vez por semana."""
+        from alfred import support
+
+        s = self.settings.value
+        if not self.window.isVisible() or self.wheel.isVisible():
+            return
+        if support.should_show_popup(s.support_popup, s.support_last_shown):
+            self.settings.update(support_last_shown=time.time())
+            self.show_support(from_popup=True)
 
     def window_hidden_to_tray(self):
         if not self.settings.value.tray_hint_shown:
@@ -354,6 +376,7 @@ class AlfredApp(QObject):
         cmd = msg.get("cmd")
         if cmd == "show":
             self.show_page("home")
+            QTimer.singleShot(1200, self.maybe_show_support_popup)
         elif cmd == "settings":
             self.show_page("settings")
         elif cmd == "quit":

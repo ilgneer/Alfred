@@ -145,6 +145,19 @@ tests/           ~600 testes automatizados
 
 Projeto independente, sem afiliação com DC Comics, Warner Bros. ou qualquer outra marca.
 
+## Apoie o projeto
+
+O Alfred é gratuito, sem anúncios e offline. Se ele te ajuda no dia a dia, considere um Pix de qualquer valor
+(também disponível em *Configurações › Apoie o projeto* dentro do app):
+
+<p align="center"><img src="assets/pix_qr.png" alt="QR code Pix para apoiar o Alfred" width="200"></p>
+
+Pix copia e cola:
+
+```
+00020126580014BR.GOV.BCB.PIX0136596a3240-f616-4b82-b066-18bcae3ac6645204000053039865802BR5906ilgn3r6006CIDADE62070503***63046B6B
+```
+
 ## Créditos
 
 Criado por **[@ilgn3r](https://www.youtube.com/@ilgn3r)**. Contribuições são bem-vindas — leia o

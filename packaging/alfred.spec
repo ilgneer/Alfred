@@ -14,6 +14,7 @@ datas = [
     (str(ROOT / "assets" / "alfred.png"), "assets"),
     (str(ROOT / "assets" / "alfred.ico"), "assets"),
     (str(ROOT / "assets" / "alfred_tray.png"), "assets"),
+    (str(ROOT / "assets" / "pix_qr.png"), "assets"),
     (str(ROOT / "assets" / "sounds"), "assets/sounds"),
     (str(ROOT / "assets" / "fonts"), "assets/fonts"),
 ]

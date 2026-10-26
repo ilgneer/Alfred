@@ -3,6 +3,16 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e
 [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## [2.1.0] — 2026-10-26
+
+### Adicionado
+- “Apoie o projeto”: janela com QR code e Pix copia e cola (botão de copiar), aberta por um lembrete ao abrir o
+  Alfred (no máximo uma vez por semana, com opção de desligar), pelas Configurações, pela tela Sobre, pela barra
+  lateral e pelo menu da bandeja.
+
+### Corrigido
+- Instalador: compressão que estourava a memória do compilador do Inno Setup (“Out of memory”).
+
 ## [2.0.0] — 2026-10-24
 
 Reescrita completa.
